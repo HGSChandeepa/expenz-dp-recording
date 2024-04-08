@@ -1,5 +1,5 @@
 import 'package:expenz/screens/mani_screen.dart';
-import 'package:expenz/screens/user_services.dart';
+import 'package:expenz/services/user_services.dart';
 import 'package:flutter/material.dart';
 import 'package:expenz/constants/colors.dart';
 import 'package:expenz/constants/constants.dart';
