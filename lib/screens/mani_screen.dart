@@ -1,11 +1,13 @@
 import 'package:expenz/constants/colors.dart';
 import 'package:expenz/models/expens_model.dart';
+import 'package:expenz/models/income_model.dart';
 import 'package:expenz/screens/add_new_screen.dart';
 import 'package:expenz/screens/budget_screen.dart';
 import 'package:expenz/screens/home_screen.dart';
 import 'package:expenz/screens/profile_screen.dart';
 import 'package:expenz/screens/transactions_screen.dart';
 import 'package:expenz/services/expnse_service.dart';
+import 'package:expenz/services/income_service.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
@@ -20,19 +22,34 @@ class _MainScreenState extends State<MainScreen> {
   int _currentPageIndex = 0;
 
   List<Expense> expenseList = [];
+  List<Income> incomeList = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchAllExpenses();
+    fetchAllIncomes();
+  }
 
   //Function to fetch expenses
   void fetchAllExpenses() async {
     List<Expense> loadedExpenses = await ExpenseSercive().loadExpenses();
     setState(() {
       expenseList = loadedExpenses;
-      print(expenseList.length);
+    });
+  }
+
+  //Function to fetch all Incomes
+  void fetchAllIncomes() async {
+    List<Income> loadedIncomes = await IncomeService().loadIncomes();
+    setState(() {
+      incomeList = loadedIncomes;
     });
   }
 
   // Function to add a new expense
-  void addNewExpense(Expense newExpense) {
-    ExpenseSercive().saveExpenses(newExpense, context);
+  void addNewExpense(Expense newExpense) async {
+    await ExpenseSercive().saveExpenses(newExpense, context);
 
     // Update the list of expenses
     setState(() {
@@ -40,11 +57,13 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  @override
-  void initState() {
-    super.initState();
+  // function to add new income
+  void addNewIncome(Income newIncome) async {
+    await IncomeService().saveIncome(newIncome, context);
+
+    //upadted the income list
     setState(() {
-      fetchAllExpenses();
+      incomeList.add(newIncome);
     });
   }
 
@@ -52,13 +71,14 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     //screens list
     final List<Widget> pages = [
-      HomeScreen(),
-      TranscatiosScreen(),
+      const HomeScreen(),
+      const TranscatiosScreen(),
       AddNewScreen(
         addExpense: addNewExpense,
+        addIncome: addNewIncome,
       ),
-      BudgetScreen(),
-      ProfileScreen(),
+      const BudgetScreen(),
+      const ProfileScreen(),
     ];
     return Scaffold(
       bottomNavigationBar: BottomNavigationBar(
@@ -70,7 +90,6 @@ class _MainScreenState extends State<MainScreen> {
         onTap: (index) {
           setState(() {
             _currentPageIndex = index;
-            print(_currentPageIndex);
           });
         },
         selectedLabelStyle: const TextStyle(
