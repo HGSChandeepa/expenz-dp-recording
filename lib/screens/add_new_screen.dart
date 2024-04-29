@@ -34,6 +34,8 @@ class _AddNewScreenState extends State<AddNewScreen> {
   DateTime _selectedDate = DateTime.now();
   DateTime _selectedTime = DateTime.now();
 
+  final _formkey = GlobalKey<FormState>();
+
   @override
   void dispose() {
     _titleControoller.dispose();
@@ -167,7 +169,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
 
                 //user data from
                 Container(
-                  height: MediaQuery.of(context).size.height * 0.7,
+                  height: MediaQuery.of(context).size.height * 0.75,
                   margin: EdgeInsets.only(
                     top: MediaQuery.of(context).size.height * 0.3,
                   ),
@@ -181,6 +183,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Form(
+                      key: _formkey,
                       child: Column(
                         children: [
                           //category selector dropdown
@@ -226,6 +229,12 @@ class _AddNewScreenState extends State<AddNewScreen> {
                           //title feild
                           TextFormField(
                             controller: _titleControoller,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Please Enter a Title!";
+                              }
+                              return null;
+                            },
                             decoration: InputDecoration(
                               hintText: "Title",
                               border: OutlineInputBorder(
@@ -243,6 +252,12 @@ class _AddNewScreenState extends State<AddNewScreen> {
                           //description feild
                           TextFormField(
                             controller: _descriptionControoller,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Please Enter a Description!";
+                              }
+                              return null;
+                            },
                             decoration: InputDecoration(
                               hintText: "Description",
                               border: OutlineInputBorder(
@@ -260,6 +275,17 @@ class _AddNewScreenState extends State<AddNewScreen> {
                           //amount feild
                           TextFormField(
                             controller: _amountControoller,
+                            validator: (value) {
+                              if (value!.isEmpty) {
+                                return "Please Enter a amount!";
+                              }
+
+                              double? amount = double.tryParse(value);
+                              if (amount == null || amount <= 0) {
+                                return "Please enter a valid amount";
+                              }
+                              return null;
+                            },
                             keyboardType: TextInputType.number,
                             decoration: InputDecoration(
                               hintText: "Amount",
@@ -272,6 +298,7 @@ class _AddNewScreenState extends State<AddNewScreen> {
                               ),
                             ),
                           ),
+
                           const SizedBox(
                             height: 20,
                           ),
@@ -420,54 +447,56 @@ class _AddNewScreenState extends State<AddNewScreen> {
                           GestureDetector(
                             onTap: () async {
                               //save the expense or the income data into shared pref
-                              if (_selectedMethode == 0) {
-                                //adding expense
-                                List<Expense> loadedExpenses =
-                                    await ExpenseSercive().loadExpenses();
+                              if (_formkey.currentState!.validate()) {
+                                if (_selectedMethode == 0) {
+                                  //adding expense
+                                  List<Expense> loadedExpenses =
+                                      await ExpenseSercive().loadExpenses();
 
-                                //create the expense to store
-                                Expense expense = Expense(
-                                  id: loadedExpenses.length + 1,
-                                  title: _titleControoller.text,
-                                  amount: _amountControoller.text.isEmpty
-                                      ? 0
-                                      : double.parse(_amountControoller.text),
-                                  category: _expenceCategory,
-                                  date: _selectedDate,
-                                  time: _selectedTime,
-                                  description: _descriptionControoller.text,
-                                );
+                                  //create the expense to store
+                                  Expense expense = Expense(
+                                    id: loadedExpenses.length + 1,
+                                    title: _titleControoller.text,
+                                    amount: _amountControoller.text.isEmpty
+                                        ? 0
+                                        : double.parse(_amountControoller.text),
+                                    category: _expenceCategory,
+                                    date: _selectedDate,
+                                    time: _selectedTime,
+                                    description: _descriptionControoller.text,
+                                  );
 
-                                //add expense
-                                widget.addExpense(expense);
+                                  //add expense
+                                  widget.addExpense(expense);
 
-                                //clear the feilds
-                                _titleControoller.clear();
-                                _amountControoller.clear();
-                                _descriptionControoller.clear();
-                              } else {
-                                //load incomes
-                                List<Income> loadedIncomes =
-                                    await IncomeService().loadIncomes();
-                                //create the new income
-                                Income income = Income(
-                                  id: loadedIncomes.length + 1,
-                                  title: _titleControoller.text,
-                                  amount: _amountControoller.text.isEmpty
-                                      ? 0
-                                      : double.parse(_amountControoller.text),
-                                  category: _incomeCategory,
-                                  date: _selectedDate,
-                                  time: _selectedTime,
-                                  description: _descriptionControoller.text,
-                                );
+                                  //clear the feilds
+                                  _titleControoller.clear();
+                                  _amountControoller.clear();
+                                  _descriptionControoller.clear();
+                                } else {
+                                  //load incomes
+                                  List<Income> loadedIncomes =
+                                      await IncomeService().loadIncomes();
+                                  //create the new income
+                                  Income income = Income(
+                                    id: loadedIncomes.length + 1,
+                                    title: _titleControoller.text,
+                                    amount: _amountControoller.text.isEmpty
+                                        ? 0
+                                        : double.parse(_amountControoller.text),
+                                    category: _incomeCategory,
+                                    date: _selectedDate,
+                                    time: _selectedTime,
+                                    description: _descriptionControoller.text,
+                                  );
 
-                                //add income
-                                widget.addIncome(income);
-                                //clear the feilds
-                                _titleControoller.clear();
-                                _amountControoller.clear();
-                                _descriptionControoller.clear();
+                                  //add income
+                                  widget.addIncome(income);
+                                  //clear the feilds
+                                  _titleControoller.clear();
+                                  _amountControoller.clear();
+                                  _descriptionControoller.clear();
+                                }
                               }
                             },
                             child: CustomButton(
